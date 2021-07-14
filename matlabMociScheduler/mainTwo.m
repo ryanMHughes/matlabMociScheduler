@@ -27,8 +27,8 @@ names = cellstr(latandlong(:,1)');
 % sets up the specified datetime range
 
 startTime = datetime(2021,6,10,0,0,0);
-stopTime = startTime + days(7);
-sampleTime = 3; %seconds
+stopTime = startTime + hours(3);
+sampleTime = 10; %seconds
 
 % adds the specified datetime range to a new satelliteScenario
 sc = satelliteScenario(startTime,stopTime,sampleTime);
@@ -36,8 +36,8 @@ sc = satelliteScenario(startTime,stopTime,sampleTime);
 % makes the UGA groundstation for data uplink and downlink from MOCI
 minElevationAngle = 25;
 name = 'Ground_Station';
-UGA = groundStation(sc, lat(84), long(84), ...
-    'Name', name, "MinElevationAngle", minElevationAngle);
+UGA = groundStation(sc, lat(84), long(84), 'Name', ...
+    name, "MinElevationAngle", minElevationAngle);
 
 lat(84) = [];
 long(84) = [];
@@ -53,19 +53,7 @@ for i = 1:length(lat)
         'Name', name);
     gsList = [gsList, gs];
 end
-
-% adding moci satellite into simulation using 97 inclination and 500 km
-% circular orbit
-%semiMajorAxis = 6878000;
-%eccentricity = 0;
-%inclination = 97;
-%rightAscentionOfAscendingNode = 0;
-%argumentOfPeriapsis = 0;
-%trueAnomaly = 0;
-
-%moci = satellite(sc,semiMajorAxis,eccentricity,inclination, ... 
-%    rightAscentionOfAscendingNode, argumentOfPeriapsis, trueAnomaly, ...
-%    "Name", "MOCI"); 
+ 
 moci = satellite(sc, 'TLE.txt', "Name", "MOCI");
 
 % adds a new camera to the stellite with a field of view of 4.8 degrees
@@ -100,9 +88,8 @@ T2 = splitvars(T1)
 
 writetable(T2, 'access.txt');
 
-% Visualizing the scenario and making the MOCI Cameras FOV visible
+% Visualizing scenario
 
-% v = satelliteScenarioViewer(sc);
-% fov = fieldOfView(cam([cam.Name] == "MOCI Camera"));
+%v = satelliteScenarioViewer(sc);
 
 toc
