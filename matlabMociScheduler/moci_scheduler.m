@@ -9,7 +9,10 @@
 % picture taking. Returns a whole schedule for the satellite to follow
 % provided it does not have an emergency.
 
-tic
+
+% ------------- Simulation Code Begins ---------------
+
+
 
 targets = 'target_list.csv';
 
@@ -83,6 +86,9 @@ end
 acs = [acs,access(gsList(1), moci)];
 
 T2 = accessIntervals(acs);
+
+% ------------ Scheduling Code Begins -------------
+
 
 % sorts the table by the start time of each interval
 sortedArray = sortrows(T2,4);
@@ -167,13 +173,118 @@ if sortedArray{height(sortedArray),5} < stopTime
     newRow{1,6} = seconds(newRow{1,5} - newRow{1,4});
     sortedArray = [sortedArray; newRow];
 end
- 
 
-% Visualizing the scenario and making the MOCI Cameras FOV visible
+% --------- Elevation code begins -----------
 
-%v = satelliteScenarioViewer(sc);
-%fov = fieldOfView(cam([cam.Name] == "MOCI Camera"));
 
-toc
+% Creating table of imaging intervals w/ datetimes & target names, new
+% version
 
+imagingStartsTable = sortedArray(:,4);
+imagingEndsTable = sortedArray(:,5);
+
+T = [0, 0, 0];
+T = array2table(T);
+
+starts = [];
+ends = [];
+targets = [];
+
+
+for i = 1:height(sortedArray)
+    if sortedArray.(1)(i) == "MOCI" || sortedArray.(1)(i) == "MOCI Cam"
+        starts = [starts; sortedArray.(4)(i)];
+        ends = [ends; sortedArray.(5)(i)];
+        targets = [targets; sortedArray.(2)(i)];
+    end
+end
+
+startsTable = array2table(starts);
+endsTable = array2table(ends);
+targetsTable = array2table(targets);
+
+T = [startsTable, endsTable, targetsTable];
+
+T = table2cell(T);
+
+%Computing max elevations during each imaging inteval
+
+elevations = [];
+solarElevations = [];
+
+for i = 1:length(T)
+    nameOfTarget = T{i,3};
+    for j = 1:length(lat)
+         if gsList(j).Name == nameOfTarget
+            target = gsList(j);
+         end
+    end
+    startTime = T{i,1}; %start of imaging interval
     
+    timeOne = T{i,1};
+    timeTwo = T{i,2};
+    
+    maxEl = 0;
+    while timeOne < timeTwo
+        [az, elev, r] = aer(target, moci, timeOne);
+        if elev > maxEl
+            maxEl = elev;
+        end
+        timeOne = timeOne + seconds(1);
+    end
+    elevations = [elevations; maxEl];
+    
+    timeOne = T{i,1};
+    maxSolarElev = 0;
+    
+    while timeOne < timeTwo
+        [az, elev] = SolarAzEl(timeOne, target.Latitude, ... 
+            target.Longitude, target.Altitude);
+        if elev > maxSolarElev
+            maxSolarElev = elev;
+        end
+        timeOne = timeOne + seconds(1);
+    end
+    solarElevations = [solarElevations; maxSolarElev];
+end
+    
+%Writing maximum elevations to a text file, to be fed into python
+%scheduling script. 
+
+T = array2table(elevations);
+
+writetable(T, 'elevations.txt');
+
+T2 = array2table(solarElevations);
+
+writetable(T2, 'solarElevations.txt')
+
+% Combine satellite elevations onto schedule, removing unneeded columns
+% first
+
+sortedArray = removevars(sortedArray, {'IntervalNumber','StartOrbit',...
+    'EndOrbit'}); 
+
+size = height(sortedArray);
+zeroArray = zeros([1, size]);
+zeroColumn = zeroArray.';
+zeroColumnTwo = zeroArray.';
+
+zeroTable = array2table(zeroColumn);
+sortedArray = [sortedArray, zeroTable];
+
+zeroTableTwo = array2table(zeroColumnTwo);
+sortedArray = [sortedArray, zeroTableTwo];
+
+j = 1;
+for i = 1:height(sortedArray)
+    if sortedArray.(1)(i) == "MOCI" || sortedArray.(1)(i) == "MOCI Cam"
+        sortedArray.(6)(i) = T.(1)(j);
+        sortedArray.(7)(i) = T2.(1)(j);
+        j = j + 1;
+    end
+end
+
+sortedArray
+
+writetable(sortedArray, 'Schedule_Files/finalschedulethree.csv')

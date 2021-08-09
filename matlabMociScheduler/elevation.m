@@ -1,3 +1,9 @@
+%Placing mock schedule in script, will be output of 'main.m' section
+%in combined file
+
+filename = 'Schedule_Files/testSchedule.csv'
+
+schedule = readtable(filename)
 
 % Reading in target list data to variable
 
@@ -42,28 +48,18 @@ for i = 1:length(lat)
     gsList = [gsList, gs];
 end
 
-% Defining orbital parameters for MOCI orbit and placing satellite on orbit
-semiMajorAxis = 6878000;
-eccentricity = 0;
-inclination = 97;
-rightAscentionOfAscendingNode = 0;
-argumentOfPeriapsis = 0;
-trueAnomaly = 0;
-
-moci = satellite(sc,semiMajorAxis,eccentricity,inclination, ... 
-    rightAscentionOfAscendingNode, argumentOfPeriapsis, trueAnomaly, ...
-    "Name", "MOCI"); 
+% Creating MOCI satellite using TLE
+moci = satellite(sc, 'TLE.txt', "Name", "MOCI");
 
 % Creating moci camera wth FFOV of 4.8 degrees (HFOV +- 2.4 deg)
 camName = moci.Name + " Camera";
 cam = conicalSensor(moci, "Name" , camName, "MaxViewAngle", 4.8, ...
     "MountingAngles", [0; 0; 0]);
 
-% Creating cell array where intervals are represented with datetime obects
-% and paired with respective target. 
+% Creating cell array by creating datetime objects from intervals 
+% start/end time and pairing with respective target for imaging.
 
 T = readtable('testIntervals.csv');
-
 intervals = [];
 
 for i = 1:height(T)
@@ -141,13 +137,49 @@ end
 %Writing maximum elevations to a text file, to be fed into python
 %scheduling script. 
 
-T = array2table(elevations);
+T2 = array2table(elevations);
 
-writetable(T, 'elevations.txt');
+writetable(T2, 'elevations.txt');
 
-T2 = array2table(solarElevations);
+T3 = array2table(solarElevations);
 
-writetable(T2, 'solarElevations.txt');
+writetable(T3, 'solarElevations.txt')
+
+%Combine satellite elevations onto schedule
+
+size = height(schedule);
+zeroArray = zeros([1, size]);
+zeroColumn = zeroArray.';
+
+zeroTable = array2table(zeroColumn);
+schedule = [schedule, zeroTable];
+
+j = 1;
+for i = 1:height(schedule)
+    lastSplit = strsplit(string(schedule.(7)(i)),',');
+    if lastSplit(3) == "imaging"
+        schedule.(8)(i) = T2.(1)(j);
+        j = j + 1;
+    end
+end
+
+%Combine solar elevations onto schedule    
+
+zeroColumnTwo = zeroArray.';
+zeroTableTwo = array2table(zeroColumnTwo);
+schedule = [schedule, zeroTableTwo];
+
+j = 1;
+for i = 1:height(schedule)
+    lastSplit = strsplit(string(schedule.(7)(i)),',');
+    if lastSplit(3) == "imaging"
+        schedule.(9)(i) = T3.(1)(j);
+        j = j + 1;
+    end
+end
+
+writetable(schedule, 'Schedule_Files/finalschedule2.csv')
+
 
 
 

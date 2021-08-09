@@ -1,0 +1,19 @@
+Source,Target,StartTime,EndTime,Duration,zeroColumn,zeroColumnTwo
+Cruise,Cruise,6/10/2021 0:00,6/10/2021 0:02,120,0,0
+MOCI,Teide,6/10/2021 0:02,6/10/2021 0:09,470,6.816659079,0
+Data Processing,Data Processing,6/10/2021 0:09,6/10/2021 0:39,1800,0,0
+Cruise,Cruise,6/10/2021 0:39,6/10/2021 0:50,650,0,0
+MOCI,Sydney_Harbor,6/10/2021 0:50,6/10/2021 0:58,480,7.216257451,31.60673021
+Data Processing,Data Processing,6/10/2021 0:58,6/10/2021 1:28,1800,0,0
+Cruise,Cruise,6/10/2021 1:28,6/10/2021 1:33,260,0,0
+MOCI,Brooklyn_Bridge,6/10/2021 1:33,6/10/2021 1:36,220,1.280675978,0
+Data Processing,Data Processing,6/10/2021 1:36,6/10/2021 2:06,1800,0,0
+Cruise,Cruise,6/10/2021 2:06,6/10/2021 3:15,4100,0,0
+Ground_Station,MOCI,6/10/2021 3:15,6/10/2021 3:18,230,0,0
+Cruise,Cruise,6/10/2021 3:18,6/10/2021 4:12,3230,0,0
+MOCI,Alto_de_Nique,6/10/2021 4:12,6/10/2021 4:23,670,39.52830525,0
+Data Processing,Data Processing,6/10/2021 4:23,6/10/2021 4:53,1800,0,0
+Cruise,Cruise,6/10/2021 4:53,6/10/2021 5:14,1250,0,0
+MOCI,K2,6/10/2021 5:14,6/10/2021 5:25,670,81.91091336,67.09748046
+Data Processing,Data Processing,6/10/2021 5:25,6/10/2021 5:55,1800,0,0
+Cruise,Cruise,6/10/2021 5:55,6/10/2021 6:00,250,0,0
